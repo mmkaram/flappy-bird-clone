@@ -36,7 +36,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 	commands.spawn(camera);
 
-    let texture = asset_server.load("character.png");
+    let texture = asset_server.load("bird.png");
 
     commands.spawn((
         SpriteBundle {

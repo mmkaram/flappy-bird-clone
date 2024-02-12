@@ -125,12 +125,14 @@ fn collider_checks (
     for (_, transform, sprite) in colliders.iter_mut() {
         let pos = transform.translation;
 		let size = sprite.custom_size.unwrap();
-		for (player_transform, _) in &player {
-			let player_pos = player_transform.translation;
-			if player_pos.x < pos.x + size.x / 2.0
-				&& player_pos.x > pos.x - size.x / 2.0
-				&& player_pos.y < pos.y + size.y / 2.0
-				&& player_pos.y > pos.y - size.y / 2.0
+		for (player_transform, _) in player.iter() {
+			let player_pos = player_transform.translation; // Declare player_pos here
+			let player_size = Vec2::new(100.0, 100.0); // Assuming the size is 100px by 100px
+		
+			if player_pos.x + player_size.x / 2.0 > pos.x - size.x / 2.0
+				&& player_pos.x - player_size.x / 2.0 < pos.x + size.x / 2.0
+				&& player_pos.y + player_size.y / 2.0 > pos.y - size.y / 2.0
+				&& player_pos.y - player_size.y / 2.0 < pos.y + size.y / 2.0
 			{
 				return true;
 			}

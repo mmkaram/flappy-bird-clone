@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 
 mod poles;
+mod player;
 use poles::*;
+use player::*;
 
-const GRAVITY: f32 = 300.0;
 
 fn main() {
     App::new()
@@ -32,11 +33,17 @@ fn main() {
 
 #[derive(Component)]
 pub struct Ground {}
-#[derive(Component)]
-pub struct Player {
-    speed: f32,
-    jump_index: u8,
-}
+
+// fn play_game(
+// 	player: Query<(&Transform, &Player)>,
+// 	colliders: Query<(&Collider, &Transform, &Sprite)>,
+// ) {
+// 	if has_lost(player, colliders){
+// 		println!("Game Over");
+// 	} else {
+
+// 	}
+// }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // setup camera
@@ -61,61 +68,42 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 
     // setup player
-    let texture = asset_server.load("bird.png");
-    commands.spawn((
-        SpriteBundle {
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(100.0, 100.0)),
-                ..default()
-            },
-            texture,
-            ..default()
-        },
-        Player {
-            speed: 225.0,
-            jump_index: 0,
-        },
-    ));
+let texture = asset_server.load("bird.png");
+commands.spawn((
+	SpriteBundle {
+		sprite: Sprite {
+			custom_size: Some(Vec2::new(100.0, 100.0)),
+			..default()
+		},
+		texture,
+		..default()
+	},
+	Player {
+		speed: 225.0,
+		jump_index: 0,
+	},
+));
 }
 
 
-fn character_movement(
-    mut characters: Query<(&mut Transform, &mut Player)>,
-    input: Res<Input<KeyCode>>,
-    time: Res<Time>,
-) {
-    for (mut transform, mut player) in &mut characters {
-        let movement_amount = player.speed * time.delta_seconds();
-        let gravity = GRAVITY * time.delta_seconds();
-        if player.jump_index > 0 {
-            transform.translation.y += movement_amount;
-            player.jump_index += 1;
-        } else if input.pressed(KeyCode::Space) {
-            transform.translation.y += movement_amount;
-            player.jump_index += 1;
-        }
-        if player.jump_index >= 40 {
-            player.jump_index = 0;
-        }
-        if player.jump_index == 0 {
-            transform.translation.y -= gravity;
-        }
-    }
-}
+
 
 fn has_lost(
 	player: Query<(&Transform, &Player)>,
 	colliders: Query<(&Collider, &Transform, &Sprite)>,
-) {
+) /* -> bool */ {
     for (transform, _) in &player {
         // Check if the player has hit the ground
         if transform.translation.y < -240.0 {
-			println!("Game Over, flew too low")
+			println!("Game Over, flew too low");
+			/* return true; */
         }
 	}
 	if collider_checks(colliders, player) {
-		println!("Game Over, hit a pole")
+		println!("Game Over, hit a pole");
+		/* return true; */
 	}
+	/* false */
 }
 
 fn collider_checks (

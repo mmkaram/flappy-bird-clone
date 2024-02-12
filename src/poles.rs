@@ -17,18 +17,21 @@ pub fn spawn_poles(
     if time.elapsed_seconds_f64() % 2.0 == 0.0 {
         let y_position = if rand::random() { 120.0 } else { -120.0 };
 
-        commands.spawn((SpriteBundle {
-            sprite: Sprite {
-                color: Color::rgb(0.0, 0.0, 0.0),
-                custom_size: Some(Vec2::new(30.0, 240.0)), 
+        commands.spawn((
+            SpriteBundle {
+                sprite: Sprite {
+                    color: Color::rgb(0.0, 0.0, 0.0),
+                    custom_size: Some(Vec2::new(30.0, 240.0)),
+                    ..default()
+                },
+                transform: Transform {
+                    translation: Vec3::new(320.0, y_position, 0.0),
+                    ..default()
+                },
                 ..default()
             },
-            transform: Transform {
-                translation: Vec3::new(320.0, y_position, 0.0),
-                ..default()
-            },
-            ..default()
-        }, Collider {}));
+            Collider {},
+        ));
     }
 }
 

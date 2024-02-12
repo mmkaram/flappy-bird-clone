@@ -1,49 +1,41 @@
 use bevy::prelude::*;
 
-mod poles;
 mod player;
-use poles::*;
+mod poles;
 use player::*;
-
+use poles::*;
 
 fn main() {
     App::new()
-        .add_plugins(
-            DefaultPlugins
-                .set(ImagePlugin::default_nearest())
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: "Flappy Bird".into(),
-                        resolution: (640.0, 480.0).into(),
-                        resizable: false,
-                        ..default()
-                    }),
-                    ..default()
-                })
-                .build(),
-        )
-        .add_systems(Startup, setup)
-        .add_systems(FixedUpdate, (has_lost, pole_movement))
-        .add_systems(FixedUpdate, (spawn_poles, despawn_poles))
-        .add_systems(Update, character_movement)
-        .run();
+	.add_plugins(
+		DefaultPlugins
+			.set(ImagePlugin::default_nearest())
+			.set(WindowPlugin {
+				primary_window: Some(Window {
+					title: "Flappy Bird".into(),
+					resolution: (640.0, 480.0).into(),
+					resizable: false,
+					..default()
+				}),
+				..default()
+			})
+			.build(),
+	)
+	.add_systems(Startup, setup)
+	.add_systems(FixedUpdate, (has_lost, pole_movement))
+	.add_systems(FixedUpdate, (spawn_poles, despawn_poles))
+	.add_systems(Update, character_movement)
+	.run();
 }
 
-
+#[derive(Resource)]
+pub enum GameState {
+	Playing,
+	GameOver,
+}
 
 #[derive(Component)]
 pub struct Ground {}
-
-// fn play_game(
-// 	player: Query<(&Transform, &Player)>,
-// 	colliders: Query<(&Collider, &Transform, &Sprite)>,
-// ) {
-// 	if has_lost(player, colliders){
-// 		println!("Game Over");
-// 	} else {
-
-// 	}
-// }
 
 fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     // setup camera
@@ -68,63 +60,61 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 
     // setup player
-let texture = asset_server.load("bird.png");
-commands.spawn((
-	SpriteBundle {
-		sprite: Sprite {
-			custom_size: Some(Vec2::new(100.0, 100.0)),
-			..default()
-		},
-		texture,
-		..default()
-	},
-	Player {
-		speed: 225.0,
-		jump_index: 0,
-	},
-));
+    let texture = asset_server.load("bird.png");
+    commands.spawn((
+        SpriteBundle {
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(100.0, 100.0)),
+                ..default()
+            },
+            texture,
+            ..default()
+        },
+        Player {
+            speed: 225.0,
+            jump_index: 0,
+        },
+    ));
 }
 
-
-
-
 fn has_lost(
-	player: Query<(&Transform, &Player)>,
-	colliders: Query<(&Collider, &Transform, &Sprite)>,
-) /* -> bool */ {
+    player: Query<(&Transform, &Player)>,
+    colliders: Query<(&Collider, &Transform, &Sprite)>,
+) /* -> bool */
+{
     for (transform, _) in &player {
         // Check if the player has hit the ground
         if transform.translation.y < -240.0 {
-			println!("Game Over, flew too low");
-			/* return true; */
+            println!("Game Over, flew too low");
+            /* return true; */
         }
-	}
-	if collider_checks(colliders, player) {
-		println!("Game Over, hit a pole");
-		/* return true; */
-	}
-	/* false */
+    }
+    if collider_checks(colliders, player) {
+        println!("Game Over, hit a pole");
+        /* return true; */
+    }
+    /* false */
 }
 
-fn collider_checks (
+fn collider_checks(
     mut colliders: Query<(&Collider, &Transform, &Sprite)>,
     player: Query<(&Transform, &Player)>,
 ) -> bool {
     for (_, transform, sprite) in colliders.iter_mut() {
         let pos = transform.translation;
-		let size = sprite.custom_size.unwrap();
-		for (player_transform, _) in player.iter() {
-			let player_pos = player_transform.translation; // Declare player_pos here
-			let player_size = Vec2::new(100.0, 100.0); // Assuming the size is 100px by 100px
-		
-			if player_pos.x + player_size.x / 2.0 > pos.x - size.x / 2.0
-				&& player_pos.x - player_size.x / 2.0 < pos.x + size.x / 2.0
-				&& player_pos.y + player_size.y / 2.0 > pos.y - size.y / 2.0
-				&& player_pos.y - player_size.y / 2.0 < pos.y + size.y / 2.0
-			{
-				return true;
-			}
-		}
+        let size = sprite.custom_size.unwrap();
+        for (player_transform, _) in player.iter() {
+            let player_pos = player_transform.translation; // Declare player_pos here
+            let player_size = Vec2::new(100.0, 100.0); // Assuming the size is 100px by 100px
+
+            if player_pos.x + player_size.x / 2.0 > pos.x - size.x / 2.0
+                && player_pos.x - player_size.x / 2.0 < pos.x + size.x / 2.0
+                && player_pos.y + player_size.y / 2.0 > pos.y - size.y / 2.0
+                && player_pos.y - player_size.y / 2.0 < pos.y + size.y / 2.0
+            {
+                return true;
+            }
+        }
     }
-	false
+    false
 }

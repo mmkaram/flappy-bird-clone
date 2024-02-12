@@ -19,7 +19,7 @@ fn main() {
                 .build(),
         )
         .add_systems(Startup, setup)
-        .add_systems(FixedUpdate, has_lost)
+        .add_systems(FixedUpdate, (has_lost, pole_movement))
         .add_systems(Update, character_movement)
         .run();
 }
@@ -67,7 +67,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 				..default()
 			},
 			transform: Transform {
-				translation: Vec3::new(-320.0, 0.0, 0.0),
+				translation: Vec3::new(320.0, 0.0, 0.0),
 				..default()
 			},
 			..default()
@@ -91,6 +91,15 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             jump_index: 0,
         },
     ));
+}
+
+fn pole_movement(
+	mut poles: Query<(&mut Transform, &mut Collider)>,
+	time: Res<Time>,
+) {
+	for (mut transform, _) in &mut poles {
+		transform.translation.x -= 100.0 * time.delta_seconds();
+	}
 }
 
 fn character_movement(
@@ -124,11 +133,11 @@ fn has_lost(
     for (transform, _) in &player {
         // Check if the player has hit the ground
         if transform.translation.y < -240.0 {
-			println!("Game Over")
+			println!("Game Over, flew too low")
         }
 	}
 	if collider_checks(colliders, player) {
-		println!("Game Over 2")
+		println!("Game Over, hit a pole")
 	}
 }
 

@@ -1,4 +1,7 @@
-use bevy::{prelude::*, render::color, transform};
+use bevy::prelude::*;
+
+mod poles;
+use poles::*;
 
 const GRAVITY: f32 = 300.0;
 
@@ -20,16 +23,15 @@ fn main() {
         )
         .add_systems(Startup, setup)
         .add_systems(FixedUpdate, (has_lost, pole_movement))
+        .add_systems(FixedUpdate, (spawn_poles, despawn_poles))
         .add_systems(Update, character_movement)
         .run();
 }
 
-#[derive(Component)]
-pub struct Collider {}
+
 
 #[derive(Component)]
 pub struct Ground {}
-
 #[derive(Component)]
 pub struct Player {
     speed: f32,
@@ -58,23 +60,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
         Ground {},
     ));
 
-	//setup colliders
-	commands.spawn((
-		SpriteBundle {
-			sprite: Sprite {
-				color: Color::rgb(0.0, 0.0, 0.0),
-				custom_size: Some(Vec2::new(10.0, 480.0)),
-				..default()
-			},
-			transform: Transform {
-				translation: Vec3::new(320.0, 0.0, 0.0),
-				..default()
-			},
-			..default()
-		},
-		Collider {},
-	));
-
     // setup player
     let texture = asset_server.load("bird.png");
     commands.spawn((
@@ -93,14 +78,6 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
     ));
 }
 
-fn pole_movement(
-	mut poles: Query<(&mut Transform, &mut Collider)>,
-	time: Res<Time>,
-) {
-	for (mut transform, _) in &mut poles {
-		transform.translation.x -= 100.0 * time.delta_seconds();
-	}
-}
 
 fn character_movement(
     mut characters: Query<(&mut Transform, &mut Player)>,

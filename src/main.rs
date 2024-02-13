@@ -5,33 +5,34 @@ mod poles;
 use player::*;
 use poles::*;
 
-fn main() {
-    App::new()
-	.add_plugins(
-		DefaultPlugins
-			.set(ImagePlugin::default_nearest())
-			.set(WindowPlugin {
-				primary_window: Some(Window {
-					title: "Flappy Bird".into(),
-					resolution: (640.0, 480.0).into(),
-					resizable: false,
-					..default()
-				}),
-				..default()
-			})
-			.build(),
-	)
-	.add_systems(Startup, setup)
-	.add_systems(FixedUpdate, (has_lost, pole_movement))
-	.add_systems(FixedUpdate, (spawn_poles, despawn_poles))
-	.add_systems(Update, character_movement)
-	.run();
+#[derive(Resource)]
+struct GameState {
+    is_running: bool,
 }
 
-#[derive(Resource)]
-pub enum GameState {
-	Playing,
-	GameOver,
+fn main() {
+    App::new()
+        .add_plugins(
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "Flappy Bird".into(),
+                        resolution: (640.0, 480.0).into(),
+                        resizable: false,
+                        ..default()
+                    }),
+                    ..default()
+                })
+                .build(),
+        )
+        .insert_resource(GameState { is_running: true })
+        .add_systems(Startup, setup)
+        .add_systems(Update, has_lost)
+        .add_systems(Update, character_movement)
+        .add_systems(FixedUpdate, pole_movement)
+        .add_systems(FixedUpdate, (spawn_poles, despawn_poles))
+        .run();
 }
 
 #[derive(Component)]
@@ -78,6 +79,7 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 }
 
 fn has_lost(
+    mut the_game_state: ResMut<GameState>,
     player: Query<(&Transform, &Player)>,
     colliders: Query<(&Collider, &Transform, &Sprite)>,
 ) /* -> bool */
@@ -85,12 +87,14 @@ fn has_lost(
     for (transform, _) in &player {
         // Check if the player has hit the ground
         if transform.translation.y < -240.0 {
-            println!("Game Over, flew too low");
+            // println!("Game Over, flew too low");
+            the_game_state.is_running = false;
             /* return true; */
         }
     }
     if collider_checks(colliders, player) {
-        println!("Game Over, hit a pole");
+        // println!("Game Over, hit a pole");
+        the_game_state.is_running = false;
         /* return true; */
     }
     /* false */
